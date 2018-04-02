@@ -1,0 +1,99 @@
+#!/bin/bash
+
+#Ask user for word they would like to search
+echo What word or HASHword would you like to search? Note that for hashtags you must write HASHword.
+read w
+
+#Ask user how many tweets he or she would like to pull
+echo From 100-500 how many tweets would you like to pull?
+read n
+
+#Ask user if he or she would like to use the feature that collects tweets for the next 12 hours
+echo Would you like to collect data every hour for the next 12 hours to obtain a more effective analysis set?
+echo Enter 1 for yes or 0 to collect just for the current moment.
+read c 
+if [ $c -eq 1 ]
+then
+	#collect tweets every 3600 seconds until 43200 seconds
+	end=$((SECONDS+43200))
+	while [ $SECONDS -lt $end ]; do
+		python twitter.py collect $w $n
+	#program sleeps for an hour before proceeding to collect	
+	sleep 3600
+	done
+else
+	#collect tweets of the word and number specified
+	python twitter.py collect $w $n
+fi
+
+#Ask user if he or she would like to export tweet data
+echo Would you like to export tweet data into a csv file?
+echo Enter 1 for yes or 0 for no.
+read e
+if [ $e -eq 1 ]
+then
+	#exports collected tweets into a csv file
+	python twitter.py export $w
+	echo You can find the file in the "Data" folder.
+else
+	echo No worries!
+fi
+
+#ask user how they would like to analyze tweet collection
+read -p "echo How would you like to analyze tweet sentiment?
+
+#Assign numbers to each analysis and/or visualization that interacts with python commands
+echo For statistics table enter 1
+echo For interval graph enter 2
+echo For line graph enter 3
+echo For distribution graph enter 4
+echo For scatter plot enter 5
+echo For pie chart enter 6
+echo For map enter 7
+echo To exit twittertool enter 0
+Enter here: " a
+
+#loop that keeps asking for analysis choice until user enters 0 to exit the program
+while [[ -n "$a" ]]; do
+
+    case "$a" in
+        1)
+          python twitter.py analyze $w stats
+          echo You can find the sentiment statistics csv file in the "Data" folder.
+          ;;
+        2)
+          python twitter.py analyze $w interval
+          ;;
+        3)
+          python twitter.py analyze $w line
+          ;;
+        4)
+          python twitter.py analyze $w dist
+          ;;
+        5)
+          python twitter.py analyze $w scatter
+          ;;
+        6)
+          python twitter.py analyze $w pie
+          ;;
+        7)
+          python twitter.py analyze $w map
+          ;;
+        0)
+          echo Thank you for using twittertool!
+          exit 0
+          ;;
+    esac
+
+    read -p "echo How would you like to analyze tweet sentiment?
+echo For statistics table enter 1
+echo For interval graph enter 2
+echo For line graph enter 3
+echo For distribution graph enter 4
+echo For scatter plot enter 5
+echo For pie chart enter 6
+echo For map enter 7
+echo To exit twittertool enter 0
+Enter here: " a
+
+done
